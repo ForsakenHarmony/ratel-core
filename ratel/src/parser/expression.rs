@@ -29,7 +29,7 @@ static DEF_CONTEXT: Context = &[
     ____, ____, ____, ____, ____, ____, ____, CLAS, ____, ____, ____, ____,
 //  CONST BREAK DO    CASE  ELSE  CATCH EXPRT CLASS EXTND RET   WHILE FINLY
 
-    ____, ____, ____, ____, ____, ____, ____, FUNC, THIS, ____, ____, ____,
+    ____, ____, ____, ____, ____, YIEL, ____, FUNC, THIS, ____, ____, ____,
 //  SUPER WITH  CONT  FOR   SWTCH YIELD DBGGR FUNCT THIS  DEFLT IF    THROW
 
     ____, ____, ____, TRUE, FALS, NULL, UNDE, STR,  NUM,  BIN,  ____, ____,
@@ -60,7 +60,7 @@ pub static CALL_CONTEXT: Context = &[
     ____, ____, ____, ____, ____, ____, ____, ____, ____, ____, ____, ____,
     ____, ____, ____, ____, ____, ____, ____, ____, ____, SPRD, ____, ____,
     ____, ____, ____, ____, ____, ____, ____, CLAS, ____, ____, ____, ____,
-    ____, ____, ____, ____, ____, ____, ____, FUNC, THIS, ____, ____, ____,
+    ____, ____, ____, ____, ____, YIEL, ____, FUNC, THIS, ____, ____, ____,
     ____, ____, ____, TRUE, FALS, NULL, UNDE, STR,  NUM,  BIN,  ____, ____,
     ____, ____, ____, ____, ____, ____, IDEN, ____, TPLE, TPLS, ____, ____,
 ];
@@ -107,6 +107,8 @@ create_handlers! {
     const OBJ = |par| par.object_expression();
 
     const CLAS = |par| par.class_expression();
+
+    const YIEL = |par| par.yield_expression();
 
     const FUNC = |par| par.function_expression();
 
@@ -631,6 +633,24 @@ impl<'ast> Parser<'ast> {
         let class = Class::parse(self);
 
         self.alloc_at_loc(start, class.body.end, class)
+    }
+
+    #[inline]
+    pub fn yield_expression(&mut self) -> ExpressionNode<'ast> {
+        let start = self.lexer.start_then_consume();
+        let delegate = match self.lexer.token {
+            OperatorMultiplication => {
+                self.lexer.consume();
+                true
+            },
+            _ => false
+        };
+        let argument = self.expression::<ANY>();
+        let end = self.lexer.end();
+        self.alloc_at_loc(start, end, YieldExpression {
+            delegate,
+            argument
+        })
     }
 }
 
@@ -1281,6 +1301,35 @@ mod test {
         let expected = MemberExpression {
             object: mock.ptr("foo"),
             property: mock.ptr("bar"),
+        };
+
+        assert_expr!(src, expected);
+    }
+
+    #[test]
+    fn yield_statement() {
+        let src = "yield true";
+        let mock = Mock::new();
+
+        let expected = YieldExpression {
+            delegate: false,
+            argument: mock.ptr(Literal::True)
+        };
+
+        assert_expr!(src, expected);
+    }
+
+    #[test]
+    fn yield_statement_delegate() {
+        let src = "yield * gen()";
+        let mock = Mock::new();
+
+        let expected = YieldExpression {
+            delegate: true,
+            argument: mock.ptr(CallExpression {
+                callee: mock.ptr("gen"),
+                arguments: NodeList::empty(),
+            })
         };
 
         assert_expr!(src, expected);

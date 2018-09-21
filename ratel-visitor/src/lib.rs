@@ -67,6 +67,7 @@ build! {
     fn on_object_expression(item: &ObjectExpression<'ast>, node: &'ast ExpressionNode<'ast>);
     fn on_function_expression(item: &FunctionExpression<'ast>, node: &'ast ExpressionNode<'ast>);
     fn on_class_expression(item: &ClassExpression<'ast>, node: &'ast ExpressionNode<'ast>);
+    fn on_yield_expression(item: &YieldExpression<'ast>, node: &'ast ExpressionNode<'ast>);
 
     // statements
     fn on_expression_statement(item: &'ast ExpressionNode<'ast>, node: &'ast StatementNode<'ast>);

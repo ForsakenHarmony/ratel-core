@@ -127,6 +127,12 @@ pub type FunctionExpression<'ast> = Function<'ast, OptionalName<'ast>>;
 pub type ClassExpression<'ast> = Class<'ast, OptionalName<'ast>>;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+pub struct YieldExpression<'ast> {
+    pub delegate: bool,
+    pub argument: ExpressionNode<'ast>
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Expression<'ast> {
     Void,
     This(ThisExpression),
@@ -149,6 +155,7 @@ pub enum Expression<'ast> {
     Object(ObjectExpression<'ast>),
     Function(FunctionExpression<'ast>),
     Class(ClassExpression<'ast>),
+    Yield(YieldExpression<'ast>)
 }
 
 macro_rules! impl_from {
@@ -182,7 +189,8 @@ impl_from! {
     ArrowExpression<'ast> => Arrow,
     ObjectExpression<'ast> => Object,
     FunctionExpression<'ast> => Function,
-    ClassExpression<'ast> => Class
+    ClassExpression<'ast> => Class,
+    YieldExpression<'ast> => Yield
 }
 
 impl<'ast> Expression<'ast> {

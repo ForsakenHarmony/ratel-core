@@ -33,7 +33,7 @@ static STMT_HANDLERS: [StatementHandler; 108] = [
     CONS, BRK,  DO,   ____, ____, ____, ____, CLAS, ____, RET,  WHL,  ____,
 //  CONST BREAK DO    CASE  ELSE  CATCH EXPRT CLASS EXTND RET   WHILE FINLY
 
-    ____, ____, CONT, FOR,  SWCH, ____, ____, FUNC, THIS, ____, IF,   THRW,
+    ____, ____, CONT, FOR,  SWCH, YIEL, ____, FUNC, THIS, ____, IF,   THRW,
 //  SUPER WITH  CONT  FOR   SWTCH YIELD DBGGR FUNCT THIS  DEFLT IF    THROW
 
     ____, TRY,  ____, TRUE, FALS, NULL, UNDE, STR,  NUM,  BIN,  ____, ____,
@@ -89,6 +89,10 @@ create_handlers! {
     const TRY  = |par| par.try_statement();
     const SWCH = |par| par.switch_statement();
     const LABL = |par| par.labeled_or_expression_statement();
+    const YIEL = |par| {
+        let expr = par.yield_expression();
+        par.expression_statement(expr)
+    };
 }
 
 impl<'ast> Parse<'ast> for Statement<'ast> {
